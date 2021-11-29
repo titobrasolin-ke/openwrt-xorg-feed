@@ -30,7 +30,7 @@ STAMP_CONFIGURED:=$(STAMP_CONFIGURED)_$(call confvar,CONFIG_PACKAGE_hippo-canvas
 
 define Package/hippo-canvas/Default
   URL:=http://developer.mugshot.org/wiki/Hippo_Canvas
-  DEPENDS:=@FEATURE_drawing-backend_libX11
+  DEPENDS:=@DISPLAY_X11_SUPPORT
 endef
 
 define Package/hippo-canvas
@@ -53,7 +53,7 @@ $(call Package/hippo-canvas/Default)
   CATEGORY:=Languages
   SUBMENU:=Python
   TITLE:=Python bindings for hippo canvas
-  DEPENDS+=+python-mini +PACKAGE_python-hippo-canvas:python-gtk +PACKAGE_python-hippo-canvas:pycairo +hippo-canvas
+  DEPENDS+=+python +PACKAGE_python-hippo-canvas:python-gtk +PACKAGE_python-hippo-canvas:pycairo +hippo-canvas
 endef
 
 define Build/Configure

@@ -8,13 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gtk2
-PKG_VERSION:=2.17.0
+PKG_VERSION_MAJOR:=2.24
+PKG_VERSION:=2.24.32
 PKG_RELEASE:=2
 
-PKG_SOURCE:=gtk+-$(PKG_VERSION).tar.bz2
-PKG_SOURCE_URL:=@GNOME/gtk+/2.17
+PKG_SOURCE:=gtk+-$(PKG_VERSION).tar.xz
+PKG_SOURCE_URL:=@GNOME/gtk+/$(PKG_VERSION_MAJOR)
 PKG_BUILD_DIR=$(BUILD_DIR)/gtk+-$(PKG_VERSION)
-PKG_MD5SUM:=a1a1f0b66a240c31cb2733643f9170ba
+PKG_HASH:=b6c8a93ddda5eabe3bfee1eb39636c9a03d2a56c7b62828b359bf197943c582e
 
 PKG_FIXUP:=libtool
 PKG_INSTALL:=1
@@ -34,17 +35,17 @@ define Package/gtk2
   CATEGORY:=Xorg
   SUBMENU:=framework
   TITLE:=GTK+-2.0
-  DEPENDS:=@DISPLAY_SUPPORT +cairo +pango +libpng +libjpeg +atk +libtiff +glib2 \
-  +FEATURE_drawing-backend_DirectFB:directfb \
-  +FEATURE_drawing-backend_libX11:libX11 \
-  +FEATURE_drawing-backend_libX11:libXext \
-  +FEATURE_drawing-backend_libX11:libXrender \
-  +FEATURE_drawing-backend_libX11:libXfixes \
-  +FEATURE_drawing-backend_libX11:libXrandr \
-  +FEATURE_drawing-backend_libX11:libXcursor \
-  +FEATURE_drawing-backend_libX11:libXdamage \
-  +FEATURE_drawing-backend_libX11:libXcomposite \
-  +FEATURE_drawing-backend_libX11:libXi
+  DEPENDS:=@DISPLAY_SUPPORT +cairo +pango +libpng +libjpeg +atk +libtiff +glib2 +gdk-pixbuf \
+  +CONFIG_DISPLAY_DIRECTFB_SUPPORT:directfb \
+  +DISPLAY_X11_SUPPORT:libX11 \
+  +DISPLAY_X11_SUPPORT:libXext \
+  +DISPLAY_X11_SUPPORT:libXrender \
+  +DISPLAY_X11_SUPPORT:libXfixes \
+  +DISPLAY_X11_SUPPORT:libXrandr \
+  +DISPLAY_X11_SUPPORT:libXcursor \
+  +DISPLAY_X11_SUPPORT:libXdamage \
+  +DISPLAY_X11_SUPPORT:libXcomposite \
+  +DISPLAY_X11_SUPPORT:libXi
   URL:=http://www.gtk.org/
 endef
 
@@ -59,14 +60,13 @@ endef
 define Build/Configure
 	$(call Build/Configure/Default, \
 		--enable-shm \
-		--disable-xkb \
 		--disable-glibtest \
 		--disable-gdiplus \
 		--disable-xinerama \
 		--without-libjasper \
 		--without-xinput \
-		$(if $(CONFIG_FEATURE_drawing-backend_DirectFB),--with-gdktarget=directfb,) \
-		$(if $(CONFIG_FEATURE_drawing-backend_libX11),--with-x --with-gdktarget=x11,--without-x) \
+		$(if $(CONFIG_DISPLAY_DIRECTFB_SUPPORT),--with-gdktarget=directfb,) \
+		$(if $(CONFIG_DISPLAY_X11_SUPPORT),--with-x --with-gdktarget=x11,--without-x) \
 		$(if $(CONFIG_PACKAGE_gtk2-cups),--enable-cups=auto,--disable-cups), \
 		gio_can_sniff=no \
 	)
@@ -97,7 +97,7 @@ define Package/gtk2/install
 		$(PKG_INSTALL_DIR)/usr/lib/*.so* \
 		$(1)/usr/lib/
 
-	$(foreach d,engines immodules loaders, \
+	$(foreach d,engines immodules, \
 		$(INSTALL_DIR) $(1)/usr/lib/gtk-2.0/2.10.0/$(d); \
 		$(INSTALL_DATA) \
 			$(PKG_INSTALL_DIR)/usr/lib/gtk-2.0/2.10.0/$(d)/*.so \
@@ -110,16 +110,13 @@ define Package/gtk2/install
 
 	$(INSTALL_DIR) $(1)/usr/bin/
 	$(INSTALL_BIN) \
-		$(PKG_INSTALL_DIR)/usr/bin/{gdk-pixbuf-query-loaders,gtk-query-immodules-2.0,gtk-update-icon-cache} \
+		$(PKG_INSTALL_DIR)/usr/bin/{gtk-builder-convert,gtk-query-immodules-2.0,gtk-update-icon-cache} \
 		$(1)/usr/bin/
 
 	$(INSTALL_DIR) $(1)/usr/share/themes/
 	$(CP) \
 		$(PKG_INSTALL_DIR)/usr/share/themes/* \
 		$(1)/usr/share/themes/
-
-	$(INSTALL_DIR) $(1)/etc/init.d/
-	$(INSTALL_BIN) ./files/gdk-pixbuf-query-loaders.init $(1)/etc/init.d/gdk-pixbuf-query-loaders
 endef
 
 define Package/gtk2-cups/install

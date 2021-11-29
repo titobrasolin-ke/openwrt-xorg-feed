@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2006-2010 OpenWrt.org
+# Copyright (C) 2006-2019 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,21 +8,22 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=xorg-server
-PKG_VERSION:=1.7.1
-PKG_RELEASE:=1
+PKG_VERSION:=1.19.1
+PKG_RELEASE:=2
 
 PKG_SOURCE_URL:=http://xorg.freedesktop.org/releases/individual/xserver/
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_MD5SUM:=dda7842467cda6018fdc87e6002e4db1
+PKG_HASH:=79ae2cf39d3f6c4a91201d8dad549d1d774b3420073c5a70d390040aa965a7fb
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/Xorg/xserver/$(PKG_NAME)-$(PKG_VERSION)/
 PKG_BUILD_DEPENDS:=randrproto renderproto fixesproto damageproto xcmiscproto \
 				   xextproto xproto scrnsaverproto bigreqsproto resourceproto \
 				   fontsproto inputproto kbproto videoproto resourceproto \
-				   compositeproto xf86dgaproto xtrans xf86driproto dri2proto
+				   compositeproto xf86dgaproto xtrans xf86driproto dri2proto \
+				   presentproto dri3proto
 
 PKG_INSTALL:=1
-PKG_FIXUP:=libtool
+#PKG_FIXUP:=libtool
 PKG_BUILD_PARALLEL:=1
 
 PKG_CONFIG_DEPENDS:=CONFIG_PACKAGE_xserver-xorg CONFIG_PACKAGE_xserver-common
@@ -57,6 +58,7 @@ $(call Package/xorg/Default)
   +xkbcomp \
   +libxkbfile \
   +libXfont \
+  +libXfont2 \
   +libXau \
   +libXv \
   +libfontenc \
@@ -65,6 +67,11 @@ $(call Package/xorg/Default)
   +libpciaccess \
   +libdrm \
   +libgl-mesa \
+  +libepoxy \
+  +libevdev \
+  +libudev \
+  +xkeyboard-config \
+  +@DISPLAY_X11_SUPPORT \
   @DISPLAY_SUPPORT
 endef
 
@@ -74,6 +81,8 @@ $(call Package/xorg/Default)
 endef
 
 EXTRA_LDFLAGS:=-Wl,-rpath-link=$(STAGING_DIR)/usr/lib
+CONFIG_PARAS:=--disable-xwayland \
+		--host=$(GNU_TARGET_NAME)
 
 define Build/Configure
 	$(call Build/Configure/Default, \
@@ -82,19 +91,21 @@ define Build/Configure
 		--disable-unit-tests \
 		--disable-builddocs \
 		--disable-glx-tls \
-		--disable-composite \
+		--enable-composite \
 		--disable-shm \
 		--disable-xres \
 		--disable-record \
 		--enable-xv \
 		--enable-xvmc \
-		--disable-dga \
+		--enable-dga \
 		--disable-screensaver \
 		--disable-xdmcp \
 		--disable-xdm-auth-1 \
-		--disable-glx \
+		--enable-glx \
 		--enable-dri \
 		--enable-dri2 \
+		--enable-dri3 \
+		--enable-libdrm \
 		--disable-xinerama \
 		--disable-xf86vidmode \
 		--disable-xace \
@@ -127,6 +138,11 @@ define Build/Configure
 		--disable-secure-rpc \
 		--enable-silent-rules \
 		--disable-shave \
+		--enable-tslib \
+		--enable-config-udev \
+		--enable-config-udev-kms \
+		--enable-glamor \
+		$(CONFIG_PARAS) \
 	)
 endef
 
@@ -153,12 +169,12 @@ define Package/xserver-xorg/install
 		$(PKG_INSTALL_DIR)/usr/bin/Xorg \
 		$(1)/usr/bin/
 
-	$(INSTALL_DIR) $(1)/usr/lib/xorg/modules/{extensions,fonts,linux,multimedia}
+	$(INSTALL_DIR) $(1)/usr/lib/xorg/modules/{extensions,drivers}
 	$(INSTALL_DATA) \
 		$(PKG_INSTALL_DIR)/usr/lib/xorg/modules/*.so \
 		$(1)/usr/lib/xorg/modules/
 
-	$(foreach d,extensions fonts linux multimedia, \
+	$(foreach d,extensions drivers, \
 		$(INSTALL_DATA) \
 			$(PKG_INSTALL_DIR)/usr/lib/xorg/modules/$(d)/*.so \
 			$(1)/usr/lib/xorg/modules/$(d)/; \

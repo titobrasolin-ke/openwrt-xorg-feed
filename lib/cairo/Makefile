@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2008-2010 OpenWrt.org
+# Copyright (C) 2008-2019 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=cairo
-PKG_VERSION:=1.8.8
-PKG_RELEASE:=2
+PKG_VERSION:=1.16.0
+PKG_RELEASE:=3
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=http://cairographics.org/releases/
-PKG_MD5SUM:=d3e1a1035ae563812d4dd44a74fb0dd0
+PKG_MD5SUM:=f19e0353828269c22bd72e271243a552
 PKG_FIXUP:=libtool
 
 include $(INCLUDE_DIR)/package.mk
@@ -25,9 +25,10 @@ define Package/cairo
   CATEGORY:=Xorg
   SUBMENU:=libraries
   TITLE:=Multi-platform 2D graphics library
-  DEPENDS:=+fontconfig +libpng +libexpat +pixman \
-  +FEATURE_drawing-backend_DirectFB:directfb \
-  +FEATURE_drawing-backend_libX11:libX11
+  DEPENDS:=+fontconfig +libpng +libexpat +pixman +liblzo \
+  +@directfb \
+  +libX11 +libXext +libXrender +libxcb +libxcb-shm +libxcb-render \
+  +glib2
   URL:=http://cairographics.org/
 endef
 
@@ -45,9 +46,7 @@ CONFIGURE_VARS+=FONTCONFIG_LIBS="-lfreetype -lfontconfig -lz -lexpat"
 CONFIGURE_ARGS+= \
 	--enable-freetype=yes \
 	--disable-win32 \
-	--enable-xlib-xrender=no \
-	$(if $(CONFIG_FEATURE_drawing-backend_DirectFB), --enable-directfb, --disable-directfb) \
-	$(if $(CONFIG_FEATURE_drawing-backend_libX11), --enable-xlib --with-x, --disable-xlib --without-x)
+	--enable-xlib-xrender=no
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/lib/

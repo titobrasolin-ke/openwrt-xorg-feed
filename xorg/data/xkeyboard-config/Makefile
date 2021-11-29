@@ -8,12 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=xkeyboard-config
-PKG_VERSION:=1.7
-PKG_RELEASE:=2
+PKG_VERSION:=2.20
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_SOURCE_URL:=http://xlibs.freedesktop.org/xkbdesc/
-PKG_MD5SUM:=d351c0109fac166edcedad32d1b0e38e
+PKG_SOURCE_URL:=http://www.x.org/releases/individual/data/xkeyboard-config
+PKG_HASH:=d1bfc72553c4e3ef1cd6f13eec0488cf940498b612ab8a0b362e7090c94bc134
+PKG_BUILD_DEPENDS:=intltool/host
 
 PKG_INSTALL:=1
 
@@ -32,9 +33,5 @@ define Package/xkeyboard-config/install
 	$(INSTALL_DIR) $(1)/usr/share/X11
 	$(CP) $(PKG_INSTALL_DIR)/usr/share/X11/xkb $(1)/usr/share/X11/
 endef
-
-$(eval $(call RequireCommand,intltool-update, \
-	$(PKG_NAME) requires intltool installed on the host-system. \
-))
 
 $(eval $(call BuildPackage,xkeyboard-config))
